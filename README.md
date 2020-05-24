@@ -68,5 +68,7 @@ bar
 
 # References Used for Development
 
+- [encoding/json reference](https://golang.org/pkg/encoding/json/)
 - [Read piped data](https://flaviocopes.com/go-shell-pipes/)
 - [CLI: Cobra](https://github.com/spf13/cobra)
+- [Fake data into os.Stdin during tests](https://stackoverflow.com/questions/46365221/fill-os-stdin-for-function-that-reads-from-it)

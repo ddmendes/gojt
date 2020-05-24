@@ -39,6 +39,8 @@ func getPipedData() ([]byte, error) {
 		return []byte{}, err
 	}
 
+	fmt.Printf("NamedPipe: %v\n", int(info.Mode()&os.ModeNamedPipe))
+	fmt.Printf("Size: %v\n", info.Size())
 	if info.Mode()&os.ModeNamedPipe != 0 && info.Size() > 0 {
 		var output []byte
 		reader := bufio.NewReader(os.Stdin)
