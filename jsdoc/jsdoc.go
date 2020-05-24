@@ -1,4 +1,4 @@
-package jsdoc
+package jsondoc
 
 import (
 	"bufio"
@@ -9,27 +9,27 @@ import (
 	"os"
 )
 
-// JSDoc represents a generic JSON Document
-type JSDoc struct {
+// JSONDoc represents a generic JSON Document
+type JSONDoc struct {
 	Value interface{}
 	Err   error
 }
 
 // ReadPipedDoc Reads a JSON document piped to os.Stdin
-func ReadPipedDoc(jsdoc *JSDoc) error {
+func ReadPipedDoc(jsondoc *JSONDoc) error {
 	pipedData, err := getPipedData()
 	if err != nil {
-		*jsdoc = JSDoc{nil, err}
+		*jsondoc = JSONDoc{nil, err}
 		return err
 	}
 
 	input, err := unmarshalJSON(pipedData)
 	if err != nil {
-		*jsdoc = JSDoc{nil, err}
+		*jsondoc = JSONDoc{nil, err}
 		return err
 	}
 
-	*jsdoc = JSDoc{input, nil}
+	*jsondoc = JSONDoc{input, nil}
 	return nil
 }
 
@@ -60,11 +60,11 @@ func unmarshalJSON(input []byte) (interface{}, error) {
 	return document, err
 }
 
-// GetKeys return an slice of strings with JSDoc keys
-func (jsdoc JSDoc) GetKeys() []string {
-	m, ok := jsdoc.Value.(map[string]interface{})
+// GetKeys return an slice of strings with JSONDoc keys
+func (jsondoc JSONDoc) GetKeys() []string {
+	m, ok := jsondoc.Value.(map[string]interface{})
 	if !ok {
-		panic(fmt.Errorf("%v has no keys", jsdoc.Value))
+		panic(fmt.Errorf("%v has no keys", jsondoc.Value))
 	}
 
 	var keys = make([]string, 0, len(m))
@@ -75,15 +75,15 @@ func (jsdoc JSDoc) GetKeys() []string {
 	return keys
 }
 
-// Marshal returns the JSON encoding of JSDoc. Set beautify to true
+// Marshal returns the JSON encoding of JSONDoc. Set beautify to true
 // to get a indented json document.
-func (jsdoc JSDoc) Marshal(beautify bool) ([]byte, error) {
-	if jsdoc.Err != nil {
-		return nil, jsdoc.Err
+func (jsondoc JSONDoc) Marshal(beautify bool) ([]byte, error) {
+	if jsondoc.Err != nil {
+		return nil, jsondoc.Err
 	}
 
 	if beautify {
-		return json.MarshalIndent(jsdoc.Value, "", "  ")
+		return json.MarshalIndent(jsondoc.Value, "", "  ")
 	}
-	return json.Marshal(jsdoc.Value)
+	return json.Marshal(jsondoc.Value)
 }
