@@ -7,20 +7,30 @@ import (
 )
 
 func TestNext(t *testing.T) {
-	type TestTable struct {
-		iterator jsondoc.PathIterator
-		want     bool
+	type TestCase struct {
+		iterator   jsondoc.PathIterator
+		tokenCount int
 	}
-	cases := []TestTable{
-		{jsondoc.NewPathIterator(""), false},
-		{jsondoc.NewPathIterator("."), true},
-		{jsondoc.NewPathIterator(".hello.world.from.path.iterator"), true},
-		{jsondoc.NewPathIterator("  .hello.world.from.path.iterator"), true},
+
+	testCases := []TestCase{
+		{jsondoc.NewPathIterator(""), 0},
+		{jsondoc.NewPathIterator("."), 1},
+		{jsondoc.NewPathIterator(".hello.world.from.path.iterator"), 5},
+		{jsondoc.NewPathIterator("  .hello.world.from.path.iterator"), 5},
 	}
-	for _, testCase := range cases {
+
+	for _, testCase := range testCases {
+		for i := testCase.tokenCount; i > 0; i-- {
+			want := true
+			got := testCase.iterator.Next()
+			if got != want {
+				t.Errorf("Want %v. Got %v.\nTest case %v.", want, got, testCase)
+			}
+		}
+		want := false
 		got := testCase.iterator.Next()
-		if got != testCase.want {
-			t.Errorf("Want %v. Got %v", got, testCase.want)
+		if got != want {
+			t.Errorf("Want %v. Got %v.\nTest case %v.", want, got, testCase)
 		}
 	}
 }
