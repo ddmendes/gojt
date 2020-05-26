@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/ddmendes/gojt/jsondoc"
 	"github.com/spf13/cobra"
@@ -17,21 +16,18 @@ var keysCmd = &cobra.Command{
 		path := args[0]
 		document, err := document.Get(path)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			printErrorAndQuit(err, 1)
 		}
 
 		keys, err := document.GetKeys()
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			printErrorAndQuit(err, 1)
 		}
 
 		keysDoc := jsondoc.Wrap(keys)
 		output, err := keysDoc.Marshal(true)
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			printErrorAndQuit(err, 1)
 		}
 		fmt.Println(string(output))
 	},

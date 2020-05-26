@@ -12,9 +12,17 @@ var pathCmd = &cobra.Command{
 	Short:   "Print object on a given path",
 	Long:    "Print object on a given path",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("keysCmd")
-		fmt.Println("cmd:", cmd)
-		fmt.Println("args:", args)
+		path := args[0]
+		document, err := document.Get(path)
+		if err != nil {
+			printErrorAndQuit(err, 1)
+		}
+
+		output, err := document.Marshal(true)
+		if err != nil {
+			printErrorAndQuit(err, 1)
+		}
+		fmt.Println(string(output))
 	},
 }
 

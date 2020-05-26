@@ -23,6 +23,11 @@ func init() {
 	}
 }
 
+func printErrorAndQuit(err error, exitCode int) {
+	fmt.Println(err)
+	os.Exit(exitCode)
+}
+
 // Execute gojt CLI command
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
