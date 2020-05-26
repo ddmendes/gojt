@@ -31,7 +31,7 @@ func (pIter *PathIterator) Next() bool {
 	token := tokenRegex.Find(pIter.path)
 	if token == nil {
 		if len(pIter.path) == 1 && pIter.path[0] == byte('.') {
-			pIter.token = token
+			pIter.token = pIter.path
 			pIter.path = nil
 			return true
 		}

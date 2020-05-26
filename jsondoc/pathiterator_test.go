@@ -36,26 +36,28 @@ func TestNext(t *testing.T) {
 }
 
 func TestValue(t *testing.T) {
-	path := ".hello.world.from.path.iterator"
-	tokens := []string{
-		"hello",
-		"world",
-		"from",
-		"path",
-		"iterator",
+	type TestCase struct {
+		path   string
+		tokens []string
+	}
+	testCases := []TestCase{
+		{".", []string{"."}},
+		{".hello.world.from.path.iterator", []string{"hello", "world", "from", "path", "iterator"}},
 	}
 
-	pathIterator := jsondoc.NewPathIterator(path)
-	for i, want := range tokens {
-		ok := pathIterator.Next()
-		got := pathIterator.Value()
+	for _, testCase := range testCases {
+		pathIterator := jsondoc.NewPathIterator(testCase.path)
+		for i, want := range testCase.tokens {
+			ok := pathIterator.Next()
+			got := pathIterator.Value()
 
-		if !ok {
-			t.Errorf("PathIterator exhausted on step %d but still want token %v for path %v.", i+1, want, path)
-		}
+			if !ok {
+				t.Errorf("PathIterator exhausted on step %d but still want token %v for path %v.", i+1, want, testCase.path)
+			}
 
-		if got != want {
-			t.Errorf("PathIterator failed on step %d for path %v. Want %v. Got %v.", i+1, path, want, got)
+			if got != want {
+				t.Errorf("PathIterator failed on step %d for path %v. Want %v. Got %v.", i+1, testCase.path, want, got)
+			}
 		}
 	}
 }

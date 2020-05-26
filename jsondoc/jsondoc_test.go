@@ -112,8 +112,12 @@ func TestReadPipedDoc(t *testing.T) {
 
 func TestGetKeys(t *testing.T) {
 	document := loadTestJSONDoc()
-	got := document.GetKeys()
+	got, err := document.GetKeys()
 	want := testJSONDocKeys
+
+	if err != nil {
+		t.Fatal("Failed to get keys from JSON")
+	}
 
 	if len(got) != len(want) {
 		t.Errorf("Want %v but got %v", want, got)

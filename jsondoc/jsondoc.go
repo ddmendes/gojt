@@ -15,6 +15,14 @@ type JSONDoc struct {
 	Err   error
 }
 
+// Wrap anything into a JSONDoc
+func Wrap(document interface{}) JSONDoc {
+	return JSONDoc{
+		Value: document,
+		Err:   nil,
+	}
+}
+
 // ReadPipedDoc Reads a JSON document piped to os.Stdin
 func ReadPipedDoc(jsondoc *JSONDoc) error {
 	pipedData, err := getPipedData()
@@ -39,8 +47,6 @@ func getPipedData() ([]byte, error) {
 		return []byte{}, err
 	}
 
-	fmt.Printf("NamedPipe: %v\n", int(info.Mode()&os.ModeNamedPipe))
-	fmt.Printf("Size: %v\n", info.Size())
 	if info.Mode()&os.ModeNamedPipe != 0 && info.Size() > 0 {
 		var output []byte
 		reader := bufio.NewReader(os.Stdin)
@@ -63,10 +69,10 @@ func unmarshalJSON(input []byte) (interface{}, error) {
 }
 
 // GetKeys return an slice of strings with JSONDoc keys
-func (jsondoc JSONDoc) GetKeys() []string {
+func (jsondoc JSONDoc) GetKeys() ([]string, error) {
 	m, ok := jsondoc.Value.(map[string]interface{})
 	if !ok {
-		panic(fmt.Errorf("%v has no keys", jsondoc.Value))
+		return nil, fmt.Errorf("%v has no keys", jsondoc.Value)
 	}
 
 	var keys = make([]string, 0, len(m))
@@ -74,7 +80,7 @@ func (jsondoc JSONDoc) GetKeys() []string {
 		keys = append(keys, k)
 	}
 
-	return keys
+	return keys, nil
 }
 
 // Marshal returns the JSON encoding of JSONDoc. Set beautify to true
@@ -88,4 +94,42 @@ func (jsondoc JSONDoc) Marshal(beautify bool) ([]byte, error) {
 		return json.MarshalIndent(jsondoc.Value, "", "  ")
 	}
 	return json.Marshal(jsondoc.Value)
+}
+
+// Get the JSON object on a given path
+func (jsondoc JSONDoc) Get(path string) (JSONDoc, error) {
+	actualItem := jsondoc.Value
+	pathIterator := NewPathIterator(path)
+	var err error
+
+	for pathIterator.Next() {
+		token := pathIterator.Value()
+		actualItem, err = get(actualItem, token)
+		if err != nil {
+			return jsondoc, err
+		}
+	}
+
+	return JSONDoc{
+		Value: actualItem,
+		Err:   nil,
+	}, nil
+}
+
+func get(docInterface interface{}, token string) (interface{}, error) {
+	if token == "." {
+		return docInterface, nil
+	}
+
+	docMap, ok := docInterface.(map[string]interface{})
+	if !ok {
+		return nil, errors.New("Invalid path")
+	}
+
+	child, ok := docMap[token]
+	if !ok {
+		return nil, errors.New("Invalid path")
+	}
+
+	return child, nil
 }
