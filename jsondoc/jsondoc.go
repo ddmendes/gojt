@@ -10,6 +10,10 @@ import (
 	"strconv"
 )
 
+var (
+	errInvalidPath = errors.New("Invalid path")
+)
+
 // JSONDoc represents a generic JSON Document
 type JSONDoc struct {
 	Value interface{}
@@ -128,18 +132,18 @@ func get(docInterface interface{}, token string) (interface{}, error) {
 	case []interface{}:
 		index, err := strconv.Atoi(token)
 		if err != nil {
-			return nil, errors.New("Invalid path")
+			return nil, errInvalidPath
 		}
 		return getFromArray(doc, index)
 	default:
-		return nil, errors.New("Invalid path")
+		return nil, errInvalidPath
 	}
 }
 
 func getFromMap(mapElem map[string]interface{}, token string) (interface{}, error) {
 	child, ok := mapElem[token]
 	if !ok {
-		return nil, errors.New("Invalid path")
+		return nil, errInvalidPath
 	}
 	return child, nil
 }
@@ -148,5 +152,5 @@ func getFromArray(arrElem []interface{}, index int) (interface{}, error) {
 	if index < len(arrElem) {
 		return arrElem[index], nil
 	}
-	return nil, errors.New("Invalid path")
+	return nil, errInvalidPath
 }
