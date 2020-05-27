@@ -21,49 +21,40 @@ pbpaste | gojt path '.foo.bar'
 
 Print object in a given path
 
-doc.json
-```json
-{"foo": {"bar": "baz"}, "numbers": [1, 2, 3, 4]}
+```sh
+➜  gojt git:(master) cat doc.json
+{"foo":{"bar":"baz"},"numbers":[1,2,3,4]}
+➜  gojt git:(master) cat doc.json | gojt path .foo.bar
+"baz"
 ```
 
-Command:
-```
-cat doc.json | gojt path  .foo.bar
-```
+Print arrays using both map or array indexing
 
-Output:
-```
-baz
+```sh
+➜  gojt git:(master) ✗ cat doc.json
+{"foo":{"bar":"baz"},"numbers":[1,2,3,4]}
+➜  gojt git:(master) ✗ cat doc.json | gojt path .numbers.2
+3
+➜  gojt git:(master) ✗ cat doc.json | gojt path '.numbers[2]'
+3
 ```
 
 ### keys
 
 Print the available keys on a given path
 
-Clipboard:
-```json
-{"foo": {"bar": "baz"}, "numbers": [1, 2, 3, 4]}
-```
-
-Command:
-```
-pbpaste | gojt keys .
-```
-
-Output:
-```
-foo
-numbers
-```
-
-Command:
-```
-pbpaste | gojt keys .foo
-```
-
-Output:
-```
-bar
+```sh
+➜  gojt git:(master) ✗ cat doc.json
+{"foo":{"bar":"baz"},"numbers":[1,2,3,4]}
+➜  gojt git:(master) ✗ cat doc.json | ./gojt keys .
+[
+  "foo",
+  "numbers"
+]
+➜  gojt git:(master) ✗ cat doc.json | ./gojt keys .foo
+[
+  "bar"
+]
 ```
 
 # References Used for Development
