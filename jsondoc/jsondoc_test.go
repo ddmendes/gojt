@@ -160,9 +160,13 @@ func TestGet(t *testing.T) {
 		{testJSON, ".nilElem", nil},
 		{testJSON, ".numberElem", float64(3.1415)},
 		{testJSON, ".numArrElem.0", float64(1)},
+		{testJSON, ".numArrElem[0]", float64(1)},
 		{testJSON, ".numArrElem.1", float64(2)},
+		{testJSON, ".numArrElem[1]", float64(2)},
 		{testJSON, ".numArrElem.2", float64(3)},
+		{testJSON, ".numArrElem[2]", float64(3)},
 		{testJSON, ".numArrElem.3", float64(4)},
+		{testJSON, ".numArrElem[3]", float64(4)},
 	}
 
 	for _, testCase := range testCases {
