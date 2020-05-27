@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 )
 
 // JSONDoc represents a generic JSON Document
@@ -121,15 +122,31 @@ func get(docInterface interface{}, token string) (interface{}, error) {
 		return docInterface, nil
 	}
 
-	docMap, ok := docInterface.(map[string]interface{})
+	switch doc := docInterface.(type) {
+	case map[string]interface{}:
+		return getFromMap(doc, token)
+	case []interface{}:
+		index, err := strconv.Atoi(token)
+		if err != nil {
+			return nil, errors.New("Invalid path")
+		}
+		return getFromArray(doc, index)
+	default:
+		return nil, errors.New("Invalid path")
+	}
+}
+
+func getFromMap(mapElem map[string]interface{}, token string) (interface{}, error) {
+	child, ok := mapElem[token]
 	if !ok {
 		return nil, errors.New("Invalid path")
 	}
-
-	child, ok := docMap[token]
-	if !ok {
-		return nil, errors.New("Invalid path")
-	}
-
 	return child, nil
+}
+
+func getFromArray(arrElem []interface{}, index int) (interface{}, error) {
+	if index < len(arrElem) {
+		return arrElem[index], nil
+	}
+	return nil, errors.New("Invalid path")
 }
