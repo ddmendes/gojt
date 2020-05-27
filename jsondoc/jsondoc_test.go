@@ -11,6 +11,7 @@ var testJSONDocKeys = []string{
 	"boolElem",
 	"nilElem",
 	"numberElem",
+	"numArrElem",
 }
 
 func loadTestJSONDoc() jsondoc.JSONDoc {
@@ -20,6 +21,12 @@ func loadTestJSONDoc() jsondoc.JSONDoc {
 			"boolElem":   true,
 			"nilElem":    nil,
 			"numberElem": float64(3.1415),
+			"numArrElem": []interface{}{
+				float64(1),
+				float64(2),
+				float64(3),
+				float64(4),
+			},
 		},
 		Err: nil,
 	}
@@ -134,6 +141,38 @@ func TestGetKeys(t *testing.T) {
 		}
 		if !found {
 			t.Errorf("Key %v not found in %v", wantElem, got)
+		}
+	}
+}
+
+func TestGet(t *testing.T) {
+	testJSON := loadTestJSONDoc()
+
+	type TestCase struct {
+		doc  jsondoc.JSONDoc
+		path string
+		want interface{}
+	}
+
+	testCases := []TestCase{
+		{testJSON, ".strElem", "foobar"},
+		{testJSON, ".boolElem", true},
+		{testJSON, ".nilElem", nil},
+		{testJSON, ".numberElem", float64(3.1415)},
+		{testJSON, ".numArrElem.0", float64(1)},
+		{testJSON, ".numArrElem.1", float64(2)},
+		{testJSON, ".numArrElem.2", float64(3)},
+		{testJSON, ".numArrElem.3", float64(4)},
+	}
+
+	for _, testCase := range testCases {
+		child, err := testCase.doc.Get(testCase.path)
+		if err != nil {
+			t.Errorf("Failed to get path \"%v\" from JSON %v (error: %v)", testCase.path, testCase.doc, err)
+		}
+		got := child.Value
+		if testCase.want != got {
+			t.Errorf("Want %v but got %v on path %v of JSON %v", testCase.want, got, testCase.path, testCase.doc)
 		}
 	}
 }
