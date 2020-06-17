@@ -44,14 +44,13 @@ Print arrays using both map or array indexing
 Print the available keys on a given path
 
 ```sh
-➜  gojt git:(master) ✗ cat doc.json
-{"foo":{"bar":"baz"},"numbers":[1,2,3,4]}
-➜  gojt git:(master) ✗ cat doc.json | ./gojt keys .
+➜  gojt git:(master) ✗ echo '{"foo":{"bar":"baz"},"numbers":[1,2,3,4]}' | pbcopy
+➜  gojt git:(master) ✗ pbpaste | ./gojt keys .
 [
   "foo",
   "numbers"
 ]
-➜  gojt git:(master) ✗ cat doc.json | ./gojt keys .foo
+➜  gojt git:(master) ✗ pbpaste | ./gojt keys .foo
 [
   "bar"
 ]
