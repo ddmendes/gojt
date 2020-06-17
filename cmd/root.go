@@ -19,7 +19,7 @@ var document jsondoc.JSONDoc
 func init() {
 	if err := jsondoc.ReadPipedDoc(&document); err != nil {
 		fmt.Println("ERROR: Failed to read JSON document.", err)
-		panic(err)
+		printErrorAndQuit(err, 1)
 	}
 }
 

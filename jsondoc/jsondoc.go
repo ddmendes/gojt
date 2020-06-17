@@ -52,7 +52,7 @@ func getPipedData() ([]byte, error) {
 		return []byte{}, err
 	}
 
-	if info.Mode()&os.ModeNamedPipe != 0 && info.Size() > 0 {
+	if info.Mode()&os.ModeCharDevice == 0 {
 		var output []byte
 		reader := bufio.NewReader(os.Stdin)
 		for {
