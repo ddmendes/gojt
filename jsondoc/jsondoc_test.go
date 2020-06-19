@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/ddmendes/gojt/jsondoc"
+	"github.com/ddmendes/gojt/jsondoc/node"
 )
 
 var testJSONDocKeys = []string{
@@ -16,19 +17,20 @@ var testJSONDocKeys = []string{
 
 func loadTestJSONDoc() jsondoc.JSONDoc {
 	return jsondoc.JSONDoc{
-		Value: map[string]interface{}{
-			"strElem":    "foobar",
-			"boolElem":   true,
-			"nilElem":    nil,
-			"numberElem": float64(3.1415),
-			"numArrElem": []interface{}{
-				float64(1),
-				float64(2),
-				float64(3),
-				float64(4),
+		Value: node.SingleNode{
+			Elem: map[string]interface{}{
+				"strElem":    "foobar",
+				"boolElem":   true,
+				"nilElem":    nil,
+				"numberElem": float64(3.1415),
+				"numArrElem": []interface{}{
+					float64(1),
+					float64(2),
+					float64(3),
+					float64(4),
+				},
 			},
 		},
-		Err: nil,
 	}
 }
 
@@ -89,7 +91,7 @@ func TestGet(t *testing.T) {
 		if err != nil {
 			t.Errorf("Failed to get path \"%v\" from JSON %v (error: %v)", testCase.path, testCase.doc, err)
 		}
-		got := child.Value
+		got := child.Value.GetInterface()
 		if testCase.want != got {
 			t.Errorf("Want %v but got %v on path %v of JSON %v", testCase.want, got, testCase.path, testCase.doc)
 		}
