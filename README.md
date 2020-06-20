@@ -44,7 +44,7 @@ Use `[]` to query a JSON path for all items in the array
 ```sh
 ➜  gojt git:(master) ✗ cat master.json
 {"masterminds":[{"name":"Alan Turing","birth":"1912","death":"1954"},{"name":"Ada Lovelace","birth":"1815","death":"1852"},{"name":"Charles Babbage","birth":"1791","death":"1871"},{"name":"Blaise Pascal","birth":"1623","death":"1662"}]}
-➜  gojt git:(master) ✗ cat master.json | ./gojt path .
+➜  gojt git:(master) ✗ cat master.json | gojt path .
 {
   "masterminds": [
     {
@@ -69,27 +69,27 @@ Use `[]` to query a JSON path for all items in the array
     }
   ]
 }
-➜  gojt git:(master) ✗ cat master.json | ./gojt path '.masterminds[1]'
+➜  gojt git:(master) ✗ cat master.json | gojt path '.masterminds[1]'
 {
   "birth": "1815",
   "death": "1852",
   "name": "Ada Lovelace"
 }
-➜  gojt git:(master) ✗ cat master.json | ./gojt path '.masterminds[].name'
+➜  gojt git:(master) ✗ cat master.json | gojt path '.masterminds[].name'
 [
   "Alan Turing",
   "Ada Lovelace",
   "Charles Babbage",
   "Blaise Pascal"
 ]
-➜  gojt git:(master) ✗ cat master.json | ./gojt path '.masterminds[].birth'
+➜  gojt git:(master) ✗ cat master.json | gojt path '.masterminds[].birth'
 [
   "1912",
   "1815",
   "1791",
   "1623"
 ]
-➜  gojt git:(master) ✗ cat master.json | ./gojt path '.masterminds[].death'
+➜  gojt git:(master) ✗ cat master.json | gojt path '.masterminds[].death'
 [
   "1954",
   "1852",
@@ -104,12 +104,12 @@ Print the available keys on a given path
 
 ```sh
 ➜  gojt git:(master) ✗ echo '{"foo":{"bar":"baz"},"numbers":[1,2,3,4]}' | pbcopy
-➜  gojt git:(master) ✗ pbpaste | ./gojt keys .
+➜  gojt git:(master) ✗ pbpaste | gojt keys .
 [
   "foo",
   "numbers"
 ]
-➜  gojt git:(master) ✗ pbpaste | ./gojt keys .foo
+➜  gojt git:(master) ✗ pbpaste | gojt keys .foo
 [
   "bar"
 ]
