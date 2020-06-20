@@ -20,6 +20,8 @@ func (n SingleNode) Get(token string) (Node, error) {
 	elem := n.Elem
 	if token == "." {
 		return n, nil
+	} else if token == "]" {
+		return n.ToMultiNode()
 	}
 
 	switch e := elem.(type) {
@@ -71,4 +73,20 @@ func getFromArray(arrElem []interface{}, index int) (interface{}, error) {
 // GetInterface gets the interface{} value of this Node component
 func (n SingleNode) GetInterface() interface{} {
 	return n.Elem
+}
+
+// ToMultiNode wraps an array Node into a MultiNode component.
+// If actual Node is not an array an error is returned.
+func (n SingleNode) ToMultiNode() (MultiNode, error) {
+	arr, ok := n.Elem.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Used [] token over a not array element: %v", n.Elem)
+	}
+
+	singleNodes := make([]Node, len(arr))
+	for i, v := range arr {
+		singleNodes[i] = SingleNode{Elem: v}
+	}
+
+	return MultiNode(singleNodes), nil
 }

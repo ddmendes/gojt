@@ -17,6 +17,8 @@ func TestNext(t *testing.T) {
 		{jsondoc.NewPathIterator("."), 1},
 		{jsondoc.NewPathIterator(".hello.world.from.path.iterator"), 5},
 		{jsondoc.NewPathIterator("  .hello.world.from.path.iterator"), 5},
+		{jsondoc.NewPathIterator(".mastermind[1].name"), 3},
+		{jsondoc.NewPathIterator(".mastermind[].name"), 3},
 	}
 
 	for _, testCase := range testCases {
@@ -43,6 +45,8 @@ func TestValue(t *testing.T) {
 	testCases := []TestCase{
 		{".", []string{"."}},
 		{".hello.world.from.path.iterator", []string{"hello", "world", "from", "path", "iterator"}},
+		{".mastermind[0].name", []string{"mastermind", "0", "name"}},
+		{".mastermind[].birth", []string{"mastermind", "]", "birth"}},
 	}
 
 	for _, testCase := range testCases {

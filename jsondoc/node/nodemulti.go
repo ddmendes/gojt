@@ -5,9 +5,16 @@ import "errors"
 // MultiNode represents multiple json components wrapped
 type MultiNode []Node
 
-// Get a child Node
+// Get a child Node for each underlying Node.
 func (n MultiNode) Get(token string) (Node, error) {
-	return MultiNode{}, nil
+	var err error
+	for i, v := range n {
+		n[i], err = v.Get(token)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return n, nil
 }
 
 // GetKeys returns all the keys available for this Node.

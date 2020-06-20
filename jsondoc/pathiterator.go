@@ -23,13 +23,22 @@ func NewPathIterator(path string) PathIterator {
 // Returns true if there is a valid token to be read.
 // Returns false if iterator is exhausted
 func (pIter *PathIterator) Next() bool {
-	tokenRegex, err := regexp.Compile("^[\\.\\[\\]]([^\\.^\\[\\]]+)")
+	tokenRegex, err := regexp.Compile("^(?:\\]\\.|\\.|\\[|\\])(\\])?([^\\.^\\[\\]]+)?")
 	if err != nil {
 		panic(err)
 	}
 
-	token := tokenRegex.FindSubmatch(pIter.path)
-	if token == nil {
+	tokens := tokenRegex.FindSubmatch(pIter.path)
+	switch {
+	case tokens == nil:
+		return false
+	case len(tokens[1]) > 0:
+		// Captures the forEach token []
+		pIter.token = tokens[1]
+	case len(tokens[2]) > 0:
+		// Captures a common named token
+		pIter.token = tokens[2]
+	default:
 		if len(pIter.path) == 1 && pIter.path[0] == byte('.') {
 			pIter.token = pIter.path
 			pIter.path = nil
@@ -38,8 +47,7 @@ func (pIter *PathIterator) Next() bool {
 		return false
 	}
 
-	pIter.token = token[1]
-	pIter.path = pIter.path[len(token[0]):]
+	pIter.path = pIter.path[len(tokens[0]):]
 	return true
 }
 
