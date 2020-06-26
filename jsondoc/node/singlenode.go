@@ -10,9 +10,16 @@ var (
 	errInvalidPath = errors.New("Invalid path")
 )
 
-// SingleNode is a JSON node for a single component
+// SingleNode is a JSON node for a single component.
 type SingleNode struct {
 	Elem interface{}
+}
+
+// ToSingleNode wraps an interface with a SingleNode component.
+func ToSingleNode(i interface{}) Node {
+	return SingleNode{
+		Elem: i,
+	}
 }
 
 // Get a child Node
@@ -21,7 +28,11 @@ func (n SingleNode) Get(token string) (Node, error) {
 	if token == "." {
 		return n, nil
 	} else if token == "]" {
-		return n.ToMultiNode()
+		arr, ok := n.Elem.([]interface{})
+		if !ok {
+			return nil, fmt.Errorf("Used [] token over a not array element: %v", n.Elem)
+		}
+		return ToMultiNode(arr), nil
 	}
 
 	switch e := elem.(type) {
@@ -73,20 +84,4 @@ func getFromArray(arrElem []interface{}, index int) (interface{}, error) {
 // GetInterface gets the interface{} value of this Node component
 func (n SingleNode) GetInterface() interface{} {
 	return n.Elem
-}
-
-// ToMultiNode wraps an array Node into a MultiNode component.
-// If actual Node is not an array an error is returned.
-func (n SingleNode) ToMultiNode() (MultiNode, error) {
-	arr, ok := n.Elem.([]interface{})
-	if !ok {
-		return nil, fmt.Errorf("Used [] token over a not array element: %v", n.Elem)
-	}
-
-	singleNodes := make([]Node, len(arr))
-	for i, v := range arr {
-		singleNodes[i] = SingleNode{Elem: v}
-	}
-
-	return MultiNode(singleNodes), nil
 }

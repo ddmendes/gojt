@@ -10,6 +10,14 @@ import (
 	"github.com/ddmendes/gojt/jsondoc/node"
 )
 
+var (
+	toNode func(interface{}) node.Node
+)
+
+func init() {
+	toNode = node.ToSingleNode
+}
+
 // JSONDoc represents a generic JSON Document
 type JSONDoc struct {
 	Value node.Node
@@ -18,7 +26,7 @@ type JSONDoc struct {
 // Wrap anything into a JSONDoc
 func Wrap(document interface{}) JSONDoc {
 	return JSONDoc{
-		Value: node.SingleNode{Elem: document},
+		Value: toNode(document),
 	}
 }
 

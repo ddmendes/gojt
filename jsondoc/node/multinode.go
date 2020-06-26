@@ -2,8 +2,18 @@ package node
 
 import "errors"
 
-// MultiNode represents multiple json components wrapped
+// MultiNode represents multiple json components wrapped.
 type MultiNode []Node
+
+// ToMultiNode wraps an []interface{} with a MultiNode component.
+func ToMultiNode(iArr []interface{}) Node {
+	singleNodes := make([]Node, len(iArr))
+	for i, v := range iArr {
+		singleNodes[i] = SingleNode{Elem: v}
+	}
+
+	return MultiNode(singleNodes)
+}
 
 // Get a child Node for each underlying Node.
 func (n MultiNode) Get(token string) (Node, error) {
