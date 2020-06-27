@@ -1,24 +1,22 @@
-package jsondoc_test
+package pathiterator
 
 import (
 	"testing"
-
-	"github.com/ddmendes/gojt/jsondoc"
 )
 
 func TestNext(t *testing.T) {
 	type TestCase struct {
-		iterator   jsondoc.StringIterator
+		iterator   StringIterator
 		tokenCount int
 	}
 
 	testCases := []TestCase{
-		{jsondoc.NewPathIterator(""), 0},
-		{jsondoc.NewPathIterator("."), 1},
-		{jsondoc.NewPathIterator(".hello.world.from.path.iterator"), 5},
-		{jsondoc.NewPathIterator("  .hello.world.from.path.iterator"), 5},
-		{jsondoc.NewPathIterator(".mastermind[1].name"), 3},
-		{jsondoc.NewPathIterator(".mastermind[].name"), 3},
+		{NewPathIterator(""), 0},
+		{NewPathIterator("."), 1},
+		{NewPathIterator(".hello.world.from.path.iterator"), 5},
+		{NewPathIterator("  .hello.world.from.path.iterator"), 5},
+		{NewPathIterator(".mastermind[1].name"), 3},
+		{NewPathIterator(".mastermind[].name"), 3},
 	}
 
 	for _, testCase := range testCases {
@@ -50,7 +48,7 @@ func TestValue(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		pathIterator := jsondoc.NewPathIterator(testCase.path)
+		pathIterator := NewPathIterator(testCase.path)
 		for i, want := range testCase.tokens {
 			ok := pathIterator.Next()
 			got := pathIterator.Value()

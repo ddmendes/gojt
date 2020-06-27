@@ -8,16 +8,17 @@ import (
 	"os"
 
 	"github.com/ddmendes/gojt/jsondoc/node"
+	"github.com/ddmendes/gojt/jsondoc/pathiterator"
 )
 
 var (
 	toNode           func(interface{}) node.Node
-	toStringIterator func(string) StringIterator
+	toStringIterator func(string) pathiterator.StringIterator
 )
 
 func init() {
 	toNode = node.ToSingleNode
-	toStringIterator = NewPathIterator
+	toStringIterator = pathiterator.NewPathIterator
 }
 
 // JSONDoc represents a generic JSON Document

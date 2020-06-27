@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/ddmendes/gojt/jsondoc/node"
+	"github.com/ddmendes/gojt/jsondoc/pathiterator"
 )
 
 type nodeDouble struct {
@@ -89,7 +90,7 @@ func toNodeDouble(_ interface{}) node.Node {
 	return nodeDbl
 }
 
-func toIteratorDouble(_ string) StringIterator {
+func toIteratorDouble(_ string) pathiterator.StringIterator {
 	return iterDbl
 }
 
