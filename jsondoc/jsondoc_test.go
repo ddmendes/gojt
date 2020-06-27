@@ -1,99 +1,94 @@
-package jsondoc_test
+package jsondoc
 
 import (
 	"testing"
 
-	"github.com/ddmendes/gojt/jsondoc"
 	"github.com/ddmendes/gojt/jsondoc/node"
 )
 
-var testJSONDocKeys = []string{
-	"strElem",
-	"boolElem",
-	"nilElem",
-	"numberElem",
-	"numArrElem",
+type nodeDouble struct {
+	getCallCount          int
+	getKeysCallCount      int
+	getInterfaceCallCount int
 }
 
-func loadTestJSONDoc() jsondoc.JSONDoc {
-	return jsondoc.JSONDoc{
-		Value: node.SingleNode{
-			Elem: map[string]interface{}{
-				"strElem":    "foobar",
-				"boolElem":   true,
-				"nilElem":    nil,
-				"numberElem": float64(3.1415),
-				"numArrElem": []interface{}{
-					float64(1),
-					float64(2),
-					float64(3),
-					float64(4),
-				},
-			},
-		},
-	}
-}
+var nodeDbl *nodeDouble = &nodeDouble{}
 
 func TestGetKeys(t *testing.T) {
-	document := loadTestJSONDoc()
-	got, err := document.GetKeys()
-	want := testJSONDocKeys
+	jsondoc := JSONDoc{
+		Value: nodeDbl,
+	}
+	defer nodeDbl.reset()
 
+	_, err := jsondoc.GetKeys()
 	if err != nil {
-		t.Fatal("Failed to get keys from JSON")
+		t.Error("GetKeys returned an error")
 	}
 
-	if len(got) != len(want) {
-		t.Errorf("Want %v but got %v", want, got)
-	}
-
-	var found bool
-	for wantElem := range want {
-		found = false
-		for gotElem := range got {
-			if wantElem == gotElem {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Errorf("Key %v not found in %v", wantElem, got)
-		}
+	if nodeDbl.getKeysCallCount == 0 {
+		t.Error("Should have called underlying node GetKeys")
 	}
 }
 
 func TestGet(t *testing.T) {
-	testJSON := loadTestJSONDoc()
+	jsondoc := JSONDoc{
+		Value: nodeDbl,
+	}
+	defer nodeDbl.reset()
 
-	type TestCase struct {
-		doc  jsondoc.JSONDoc
-		path string
-		want interface{}
+	_, err := jsondoc.Get("./token")
+	if err != nil {
+		t.Error("Get returned an error")
 	}
 
-	testCases := []TestCase{
-		{testJSON, ".strElem", "foobar"},
-		{testJSON, ".boolElem", true},
-		{testJSON, ".nilElem", nil},
-		{testJSON, ".numberElem", float64(3.1415)},
-		{testJSON, ".numArrElem.0", float64(1)},
-		{testJSON, ".numArrElem[0]", float64(1)},
-		{testJSON, ".numArrElem.1", float64(2)},
-		{testJSON, ".numArrElem[1]", float64(2)},
-		{testJSON, ".numArrElem.2", float64(3)},
-		{testJSON, ".numArrElem[2]", float64(3)},
-		{testJSON, ".numArrElem.3", float64(4)},
-		{testJSON, ".numArrElem[3]", float64(4)},
+	if nodeDbl.getCallCount == 0 {
+		t.Error("Should have called underlying node Get")
+	}
+}
+
+func TestMarshal(t *testing.T) {
+	jsondoc := JSONDoc{
+		Value: nodeDbl,
 	}
 
-	for _, testCase := range testCases {
-		child, err := testCase.doc.Get(testCase.path)
-		if err != nil {
-			t.Errorf("Failed to get path \"%v\" from JSON %v (error: %v)", testCase.path, testCase.doc, err)
-		}
-		got := child.Value.GetInterface()
-		if testCase.want != got {
-			t.Errorf("Want %v but got %v on path %v of JSON %v", testCase.want, got, testCase.path, testCase.doc)
-		}
+	_, err := jsondoc.Marshal(true)
+	if err != nil {
+		t.Error("Marshal(true) returned an error")
+	} else if nodeDbl.getInterfaceCallCount == 0 {
+		t.Error("Should have called GetIterface() into Marshal(true)")
 	}
+	nodeDbl.reset()
+
+	_, err = jsondoc.Marshal(false)
+	if err != nil {
+		t.Error("Marshal(false) returned an error")
+	} else if nodeDbl.getInterfaceCallCount == 0 {
+		t.Error("Should have called GetIterface() into Marshal(false)")
+	}
+	nodeDbl.reset()
+}
+
+func toNodeDouble(_ interface{}) node.Node {
+	return nodeDbl
+}
+
+func (n *nodeDouble) Get(token string) (node.Node, error) {
+	n.getCallCount++
+	return n, nil
+}
+
+func (n *nodeDouble) GetKeys() ([]string, error) {
+	n.getKeysCallCount++
+	return []string{}, nil
+}
+
+func (n *nodeDouble) GetInterface() interface{} {
+	n.getInterfaceCallCount++
+	return interface{}(0)
+}
+
+func (n *nodeDouble) reset() {
+	n.getCallCount = 0
+	n.getKeysCallCount = 0
+	n.getInterfaceCallCount = 0
 }
