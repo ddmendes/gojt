@@ -5,6 +5,14 @@ import (
 	"strings"
 )
 
+// StringIterator defines an interface to Iterate over string items
+type StringIterator interface {
+	// Next tells whether or not there are still items to be read from Iterator.
+	Next() bool
+	// Value returns the next string values to read.
+	Value() string
+}
+
 // PathIterator type controls tokenization of JSON paths
 type PathIterator struct {
 	path  []byte
@@ -12,8 +20,8 @@ type PathIterator struct {
 }
 
 // NewPathIterator creates a new PathIterator for a given path string.
-func NewPathIterator(path string) PathIterator {
-	return PathIterator{
+func NewPathIterator(path string) StringIterator {
+	return &PathIterator{
 		path:  []byte(strings.TrimSpace(path)),
 		token: nil,
 	}

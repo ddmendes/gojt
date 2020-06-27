@@ -11,11 +11,13 @@ import (
 )
 
 var (
-	toNode func(interface{}) node.Node
+	toNode           func(interface{}) node.Node
+	toStringIterator func(string) StringIterator
 )
 
 func init() {
 	toNode = node.ToSingleNode
+	toStringIterator = NewPathIterator
 }
 
 // JSONDoc represents a generic JSON Document
@@ -92,11 +94,11 @@ func (jsondoc JSONDoc) Marshal(beautify bool) ([]byte, error) {
 // Get the JSON object on a given path
 func (jsondoc JSONDoc) Get(path string) (JSONDoc, error) {
 	actualItem := jsondoc.Value
-	pathIterator := NewPathIterator(path)
+	iter := toStringIterator(path)
 	var err error
 
-	for pathIterator.Next() {
-		token := pathIterator.Value()
+	for iter.Next() {
+		token := iter.Value()
 		actualItem, err = actualItem.Get(token)
 		if err != nil {
 			return jsondoc, err

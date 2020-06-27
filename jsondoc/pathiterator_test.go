@@ -8,7 +8,7 @@ import (
 
 func TestNext(t *testing.T) {
 	type TestCase struct {
-		iterator   jsondoc.PathIterator
+		iterator   jsondoc.StringIterator
 		tokenCount int
 	}
 

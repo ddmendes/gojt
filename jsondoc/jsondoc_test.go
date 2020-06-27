@@ -12,7 +12,19 @@ type nodeDouble struct {
 	getInterfaceCallCount int
 }
 
+type iteratorDouble struct {
+	nextResponses  []bool
+	valueResponses []string
+	nextIndex      int
+	nextCallCount  int
+	valueCallCount int
+}
+
 var nodeDbl *nodeDouble = &nodeDouble{}
+var iterDbl *iteratorDouble = &iteratorDouble{
+	nextResponses:  []bool{true, false},
+	valueResponses: []string{"token"},
+}
 
 func TestGetKeys(t *testing.T) {
 	jsondoc := JSONDoc{
@@ -31,6 +43,11 @@ func TestGetKeys(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
+	origToStringIterator := toStringIterator
+	toStringIterator = toIteratorDouble
+	defer func() { toStringIterator = origToStringIterator }()
+	defer iterDbl.reset()
+
 	jsondoc := JSONDoc{
 		Value: nodeDbl,
 	}
@@ -72,6 +89,10 @@ func toNodeDouble(_ interface{}) node.Node {
 	return nodeDbl
 }
 
+func toIteratorDouble(_ string) StringIterator {
+	return iterDbl
+}
+
 func (n *nodeDouble) Get(token string) (node.Node, error) {
 	n.getCallCount++
 	return n, nil
@@ -91,4 +112,25 @@ func (n *nodeDouble) reset() {
 	n.getCallCount = 0
 	n.getKeysCallCount = 0
 	n.getInterfaceCallCount = 0
+}
+
+func (iter *iteratorDouble) Next() bool {
+	iter.nextCallCount++
+	res := iter.nextResponses[iter.nextIndex]
+	if iter.nextIndex == iter.valueCallCount {
+		iter.nextIndex++
+	}
+	return res
+}
+
+func (iter *iteratorDouble) Value() string {
+	res := iter.valueResponses[iter.valueCallCount]
+	iter.valueCallCount++
+	return res
+}
+
+func (iter *iteratorDouble) reset() {
+	iter.nextIndex = 0
+	iter.nextCallCount = 0
+	iter.valueCallCount = 0
 }
