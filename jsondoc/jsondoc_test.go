@@ -39,7 +39,11 @@ func getSampleFile() (*os.File, error) {
 	}
 
 	if _, err := temp.Write([]byte(sampleInput)); err != nil {
-		return &os.File{}, err
+		return temp, err
+	}
+
+	if _, err := temp.Seek(0, 0); err != nil {
+		return temp, err
 	}
 
 	return temp, nil
@@ -47,10 +51,10 @@ func getSampleFile() (*os.File, error) {
 
 func TestNewJSONReader(t *testing.T) {
 	want, err := getSampleFile()
+	defer os.Remove(want.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(want.Name())
 
 	jsonReader := NewJSONReader(want)
 	got := jsonReader.reader
@@ -60,12 +64,17 @@ func TestNewJSONReader(t *testing.T) {
 }
 
 func TestReadJSON(t *testing.T) {
-	t.Skip("This test is not good yet hence skipping")
+	// Mock Node
+	origToNode := toNode
+	toNode = toNodeDouble
+	defer func() { toNode = origToNode }()
+
+	// Read from temp file
 	temp, err := getSampleFile()
+	defer os.Remove(temp.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(temp.Name())
 
 	sampleDoc := map[string]string{
 		"key":   "foo",
