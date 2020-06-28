@@ -1,6 +1,8 @@
 package jsondoc
 
 import (
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/ddmendes/gojt/jsondoc/node"
@@ -8,6 +10,7 @@ import (
 )
 
 type nodeDouble struct {
+	document              interface{}
 	getCallCount          int
 	getKeysCallCount      int
 	getInterfaceCallCount int
@@ -25,6 +28,71 @@ var nodeDbl *nodeDouble = &nodeDouble{}
 var iterDbl *iteratorDouble = &iteratorDouble{
 	nextResponses:  []bool{true, false},
 	valueResponses: []string{"token"},
+}
+
+const sampleInput string = "{\"key\":\"foo\",\"value\":\"bar\"}"
+
+func getSampleFile() (*os.File, error) {
+	temp, err := ioutil.TempFile(os.TempDir(), "test_input")
+	if err != nil {
+		return &os.File{}, err
+	}
+
+	if _, err := temp.Write([]byte(sampleInput)); err != nil {
+		return &os.File{}, err
+	}
+
+	return temp, nil
+}
+
+func TestNewJSONReader(t *testing.T) {
+	want, err := getSampleFile()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(want.Name())
+
+	jsonReader := NewJSONReader(want)
+	got := jsonReader.reader
+	if got != want {
+		t.Error("Should wrap given file")
+	}
+}
+
+func TestReadJSON(t *testing.T) {
+	t.Skip("This test is not good yet hence skipping")
+	temp, err := getSampleFile()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(temp.Name())
+
+	sampleDoc := map[string]string{
+		"key":   "foo",
+		"value": "bar",
+	}
+
+	jsonReader := JSONReader{reader: temp}
+	jsonDoc, err := jsonReader.ReadJSON()
+
+	doc, ok := jsonDoc.Value.GetInterface().(map[string]interface{})
+	if !ok {
+		t.Error("Wrong underlying interface")
+	}
+
+	for key, interfaceValue := range doc {
+		got, ok := interfaceValue.(string)
+		if !ok {
+			t.Error("Generic interface is not string")
+		}
+
+		want, ok := sampleDoc[key]
+		if !ok {
+			t.Errorf("Unexpected key: %v", key)
+		} else if got != want {
+			t.Errorf("Want: %v; Got: %v", sampleDoc, doc)
+		}
+	}
 }
 
 func TestGetKeys(t *testing.T) {
@@ -86,7 +154,8 @@ func TestMarshal(t *testing.T) {
 	nodeDbl.reset()
 }
 
-func toNodeDouble(_ interface{}) node.Node {
+func toNodeDouble(i interface{}) node.Node {
+	nodeDbl.document = i
 	return nodeDbl
 }
 
@@ -106,10 +175,11 @@ func (n *nodeDouble) GetKeys() ([]string, error) {
 
 func (n *nodeDouble) GetInterface() interface{} {
 	n.getInterfaceCallCount++
-	return interface{}(0)
+	return n.document
 }
 
 func (n *nodeDouble) reset() {
+	n.document = nil
 	n.getCallCount = 0
 	n.getKeysCallCount = 0
 	n.getInterfaceCallCount = 0
