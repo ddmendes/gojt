@@ -17,7 +17,10 @@ var rootCmd = &cobra.Command{
 var document jsondoc.JSONDoc
 
 func init() {
-	if err := jsondoc.ReadPipedDoc(&document); err != nil {
+	var err error
+	jsonReader := jsondoc.NewJSONReader(os.Stdin)
+	document, err = jsonReader.ReadJSON()
+	if err != nil {
 		fmt.Println("ERROR: Failed to read JSON document.", err)
 		printErrorAndQuit(err, 1)
 	}

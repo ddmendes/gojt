@@ -3,13 +3,13 @@ package jsondoc
 import (
 	"bufio"
 	"encoding/json"
-	"errors"
 	"io"
-	"os"
 
 	"github.com/ddmendes/gojt/jsondoc/node"
 	"github.com/ddmendes/gojt/jsondoc/pathiterator"
 )
+
+const inputBufferSize int = 125
 
 var (
 	toNode           func(interface{}) node.Node
@@ -26,6 +26,32 @@ type JSONDoc struct {
 	Value node.Node
 }
 
+// JSONReader reads a JSON document from a Reader.
+type JSONReader struct {
+	reader io.Reader
+}
+
+// NewJSONReader creates a Reader capable of reading JSON documents
+func NewJSONReader(reader io.Reader) JSONReader {
+	return JSONReader{reader: reader}
+}
+
+// ReadJSON reads a document from JSONReader and wraps it into a JSONDoc.
+func (r JSONReader) ReadJSON() (JSONDoc, error) {
+	bufReader := bufio.NewReader(io.Reader(r.reader))
+	data, err := readRawData(bufReader)
+	if err != nil {
+		return Wrap(nil), err
+	}
+
+	var document interface{}
+	if err := json.Unmarshal(data, &document); err != nil {
+		return Wrap(nil), err
+	}
+
+	return Wrap(document), nil
+}
+
 // Wrap anything into a JSONDoc
 func Wrap(document interface{}) JSONDoc {
 	return JSONDoc{
@@ -33,49 +59,16 @@ func Wrap(document interface{}) JSONDoc {
 	}
 }
 
-// ReadPipedDoc Reads a JSON document piped to os.Stdin
-func ReadPipedDoc(jsondoc *JSONDoc) error {
-	pipedData, err := getPipedData()
-	if err != nil {
-		*jsondoc = JSONDoc{}
-		return err
-	}
-
-	input, err := unmarshalJSON(pipedData)
-	if err != nil {
-		*jsondoc = JSONDoc{}
-		return err
-	}
-
-	*jsondoc = JSONDoc{Value: node.SingleNode{Elem: input}}
-	return nil
-}
-
-func getPipedData() ([]byte, error) {
-	info, err := os.Stdin.Stat()
-	if err != nil {
-		return []byte{}, err
-	}
-
-	if info.Mode()&os.ModeCharDevice == 0 {
-		var output []byte
-		reader := bufio.NewReader(os.Stdin)
-		for {
-			input, err := reader.ReadByte()
-			if err == io.EOF {
-				break
-			}
-			output = append(output, input)
+func readRawData(reader *bufio.Reader) ([]byte, error) {
+	output := make([]byte, 0, inputBufferSize)
+	for {
+		input, err := reader.ReadByte()
+		if err == io.EOF {
+			break
 		}
-		return []byte(output), nil
+		output = append(output, input)
 	}
-	return []byte{}, errors.New("No piped data")
-}
-
-func unmarshalJSON(input []byte) (interface{}, error) {
-	var document interface{}
-	err := json.Unmarshal(input, &document)
-	return document, err
+	return output, nil
 }
 
 // GetKeys return an slice of strings with JSONDoc keys
