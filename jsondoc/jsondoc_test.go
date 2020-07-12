@@ -241,3 +241,45 @@ func (iter *iteratorDouble) reset() {
 	iter.nextCallCount = 0
 	iter.valueCallCount = 0
 }
+
+func readJSONDocument(path string) (JSONDoc, error) {
+	sample, err := os.Open("./testdata/document.json")
+	if err != nil {
+		return JSONDoc{}, err
+	}
+	defer sample.Close()
+
+	jsonReader := NewJSONReader(sample)
+	jsondoc, err := jsonReader.ReadJSON()
+	if err != nil {
+		return JSONDoc{}, err
+	}
+
+	return jsondoc, nil
+}
+
+func BenchmarkSequentialGet(b *testing.B) {
+	pathBuf, err := ioutil.ReadFile("./testdata/document_path.txt")
+	if err != nil {
+		b.Fatal("Could not read sample path file")
+	}
+	path := string(pathBuf)
+
+	jsondoc, err := readJSONDocument("./testdata/document.json")
+	for i := 0; i < b.N; i++ {
+		sequentialGet(jsondoc.Value, path)
+	}
+}
+
+func BenchmarkPipelineGet(b *testing.B) {
+	pathBuf, err := ioutil.ReadFile("./testdata/document_path.txt")
+	if err != nil {
+		b.Fatal("Could not read sample path file")
+	}
+	path := string(pathBuf)
+
+	jsondoc, err := readJSONDocument("./testdata/document.json")
+	for i := 0; i < b.N; i++ {
+		runGetPipeline(jsondoc.Value, path)
+	}
+}

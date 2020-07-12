@@ -87,7 +87,16 @@ func (jsondoc JSONDoc) Marshal(beautify bool) ([]byte, error) {
 
 // Get the JSON object on a given path
 func (jsondoc JSONDoc) Get(path string) (JSONDoc, error) {
-	actualItem := jsondoc.Value
+	node, err := sequentialGet(jsondoc.Value, path)
+	if err != nil {
+		return jsondoc, err
+	}
+	return JSONDoc{
+		Value: node,
+	}, nil
+}
+
+func sequentialGet(json node.Node, path string) (node.Node, error) {
 	iter := toStringIterator(path)
 	var token string
 	var err error
@@ -95,15 +104,44 @@ func (jsondoc JSONDoc) Get(path string) (JSONDoc, error) {
 	for iter.Next() {
 		token, err = iter.Value()
 		if err != nil {
-			return jsondoc, err
+			return nil, err
 		}
-		actualItem, err = actualItem.Get(token)
+		json, err = json.Get(token)
 		if err != nil {
-			return jsondoc, err
+			return nil, err
 		}
 	}
 
-	return JSONDoc{
-		Value: actualItem,
-	}, nil
+	return json, nil
+}
+
+// runGetPipeline get object for a given path using the pipeline model.
+// Using benchmark tests this feature has proven to be slower than the
+// get. So code will keep using the sequential get.
+// CAUTION! No errors are handled in this method as development will
+// not use it.
+func runGetPipeline(json node.Node, path string) (node.Node, error) {
+	tokenChan := make(chan string)
+	nodeChan := make(chan node.Node)
+	// errChan := make(chan error)
+
+	go func(p string, tokChan chan<- string) {
+		iter := toStringIterator(p)
+		for iter.Next() {
+			value, _ := iter.Value()
+			tokChan <- value
+		}
+		close(tokChan)
+	}(path, tokenChan)
+
+	go func(n node.Node, nChan chan<- node.Node, tokChan <-chan string) {
+		for token := range tokChan {
+			n, _ = n.Get(token)
+		}
+		nChan <- n
+		close(nChan)
+	}(json, nodeChan, tokenChan)
+
+	nodeResult := <-nodeChan
+	return nodeResult, nil
 }
