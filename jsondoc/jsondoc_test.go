@@ -1,6 +1,7 @@
 package jsondoc
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -17,17 +18,19 @@ type nodeDouble struct {
 }
 
 type iteratorDouble struct {
-	nextResponses  []bool
-	valueResponses []string
-	nextIndex      int
-	nextCallCount  int
-	valueCallCount int
+	nextResponses     []bool
+	valueResponses    []string
+	errorValueAtIndex int
+	nextIndex         int
+	nextCallCount     int
+	valueCallCount    int
 }
 
 var nodeDbl *nodeDouble = &nodeDouble{}
 var iterDbl *iteratorDouble = &iteratorDouble{
-	nextResponses:  []bool{true, false},
-	valueResponses: []string{"token"},
+	nextResponses:     []bool{true, false},
+	valueResponses:    []string{"token"},
+	errorValueAtIndex: 100,
 }
 
 const sampleInput string = "{\"key\":\"foo\",\"value\":\"bar\"}"
@@ -131,13 +134,34 @@ func TestGet(t *testing.T) {
 	}
 	defer nodeDbl.reset()
 
-	_, err := jsondoc.Get("./token")
+	_, err := jsondoc.Get(".token")
 	if err != nil {
 		t.Error("Get returned an error")
 	}
 
 	if nodeDbl.getCallCount == 0 {
 		t.Error("Should have called underlying node Get")
+	}
+}
+
+func TestGet_Should_Error_When_PathIsInvalid(t *testing.T) {
+	origErrorIndex := iterDbl.errorValueAtIndex
+	iterDbl.errorValueAtIndex = 0
+	defer func() { iterDbl.errorValueAtIndex = origErrorIndex }()
+
+	origToStringIterator := toStringIterator
+	toStringIterator = toIteratorDouble
+	defer func() { toStringIterator = origToStringIterator }()
+	defer iterDbl.reset()
+
+	jsondoc := JSONDoc{
+		Value: nodeDbl,
+	}
+	defer nodeDbl.reset()
+
+	_, err := jsondoc.Get(".[]token")
+	if err == nil {
+		t.Error("Get should return an error")
 	}
 }
 
@@ -205,6 +229,9 @@ func (iter *iteratorDouble) Next() bool {
 
 func (iter *iteratorDouble) Value() (string, error) {
 	res := iter.valueResponses[iter.valueCallCount]
+	if iter.valueCallCount == iter.errorValueAtIndex {
+		return "", errors.New("")
+	}
 	iter.valueCallCount++
 	return res, nil
 }
