@@ -51,7 +51,7 @@ func TestValue(t *testing.T) {
 		pathIterator := NewPathIterator(testCase.path)
 		for i, want := range testCase.tokens {
 			ok := pathIterator.Next()
-			got := pathIterator.Value()
+			got, _ := pathIterator.Value()
 
 			if !ok {
 				t.Errorf("PathIterator exhausted on step %d but still want token %v for path %v.", i+1, want, testCase.path)
@@ -60,6 +60,24 @@ func TestValue(t *testing.T) {
 			if got != want {
 				t.Errorf("PathIterator failed on step %d for path %v. Want %v. Got %v.", i+1, testCase.path, want, got)
 			}
+		}
+	}
+}
+
+func TestValue_Should_Error_When_PathIsInvalid(t *testing.T) {
+	invalidPaths := []string{".masterminds[]name"}
+
+	for _, path := range invalidPaths {
+		pathIterator := NewPathIterator(path)
+		errored := false
+		for pathIterator.Next() {
+			_, err := pathIterator.Value()
+			if err != nil {
+				errored = true
+			}
+		}
+		if !errored {
+			t.Errorf("Expected path %v to fail but iterator exausted with no errors.", path)
 		}
 	}
 }

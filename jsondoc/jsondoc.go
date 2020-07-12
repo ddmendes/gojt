@@ -89,10 +89,14 @@ func (jsondoc JSONDoc) Marshal(beautify bool) ([]byte, error) {
 func (jsondoc JSONDoc) Get(path string) (JSONDoc, error) {
 	actualItem := jsondoc.Value
 	iter := toStringIterator(path)
+	var token string
 	var err error
 
 	for iter.Next() {
-		token := iter.Value()
+		token, err = iter.Value()
+		if err != nil {
+			return jsondoc, err
+		}
 		actualItem, err = actualItem.Get(token)
 		if err != nil {
 			return jsondoc, err

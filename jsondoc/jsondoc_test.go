@@ -203,10 +203,10 @@ func (iter *iteratorDouble) Next() bool {
 	return res
 }
 
-func (iter *iteratorDouble) Value() string {
+func (iter *iteratorDouble) Value() (string, error) {
 	res := iter.valueResponses[iter.valueCallCount]
 	iter.valueCallCount++
-	return res
+	return res, nil
 }
 
 func (iter *iteratorDouble) reset() {
