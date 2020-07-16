@@ -264,8 +264,8 @@ func BenchmarkSequentialGet(b *testing.B) {
 		b.Fatal("Could not read sample path file")
 	}
 	path := string(pathBuf)
-
 	jsondoc, err := readJSONDocument("./testdata/document.json")
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		sequentialGet(jsondoc.Value, path)
 	}
@@ -277,8 +277,8 @@ func BenchmarkPipelineGet(b *testing.B) {
 		b.Fatal("Could not read sample path file")
 	}
 	path := string(pathBuf)
-
 	jsondoc, err := readJSONDocument("./testdata/document.json")
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		runGetPipeline(jsondoc.Value, path)
 	}
